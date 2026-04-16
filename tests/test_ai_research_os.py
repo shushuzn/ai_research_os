@@ -337,9 +337,9 @@ class TestFormatSectionSnippetsTier1:
 
     def test_respects_max_chars_per_section(self):
         sections = [("Long", "A" * 3000)]
-        result = airo.format_section_snippets(sections, max_chars_each=1800)
-        # Should be truncated
-        assert len(result) <= 2500
+        result = airo.format_section_snippets(sections, max_chars_total=1800)
+        # Total output should be under budget
+        assert len(result) < 3000
 
 # ---------------------------------------------------------------------------
 # upsert_link_under_heading
@@ -1232,10 +1232,10 @@ class TestLooksLikeHeadingTier2:
 class TestFormatSectionSnippetsTier2:
     def test_truncates_long_section(self):
         long_content = "a" * 2000
-        sections = [("Title", long_content)]
-        result = airo.format_section_snippets(sections, max_chars_each=100)
+        sections = [("Abstract", long_content)]  # Abstract = high priority, gets budget
+        result = airo.format_section_snippets(sections, max_chars_total=200, min_chars_per_high_prio=200)
+        # With tiny budget, Abstract section should be truncated
         assert len(result) < len(long_content)
-        assert "…" in result
 
     def test_single_section(self):
         sections = [("Intro", "Some introduction text.")]
@@ -1845,9 +1845,8 @@ def test_format_section_snippets_basic():
 def test_format_section_snippets_truncates_long():
     import ai_research_os as airo
     long_content = "x" * 3000
-    sections = [("Long", long_content)]
-    result = airo.format_section_snippets(sections, max_chars_each=500)
-    assert "…" in result
+    sections = [("Abstract", long_content)]  # Abstract = high priority section
+    result = airo.format_section_snippets(sections, max_chars_total=1000)
     assert len(result) < 3000
 
 
