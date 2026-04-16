@@ -1789,9 +1789,11 @@ def test_ai_generate_pnote_draft_includes_required_sections(monkeypatch):
 
     user_prompt = captured_prompts.get("user_prompt", "")
     system_prompt = captured_prompts.get("system_prompt", "")
-    assert "## 1. 背景" in user_prompt
-    assert "## 11. Decision" in user_prompt
-    assert "## 知识蒸馏" in user_prompt
+    assert "## 背景" in user_prompt
+    assert "## 核心方法" in user_prompt
+    assert "## 关键实验" in user_prompt
+    assert "## 对抗式审稿" in user_prompt
+    assert "## 评分量表" in user_prompt
     assert "评分量表" in system_prompt
 
 
