@@ -15,7 +15,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -27,20 +27,7 @@ jobs:
       - name: Install MkDocs and material theme
         run: pip install mkdocs mkdocs-material
 
-      - name: Build docs
-        run: mkdocs build --strict --site-dir build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build
-
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build
-          publish_branch: gh-pages
+        run: mkdocs gh-deploy --strict --remote-branch gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
