@@ -92,12 +92,18 @@ jobs:
 
       - name: Upload coverage data
         if: always()
+        run: |
+          # Rename .coverage to non-hidden before upload so v4 download-artifact handles path correctly
+          cp .coverage .coverage.${{ matrix.python-version }}
+          echo ".coverage.${{ matrix.python-version }}" > artifact_contains.txt
+
+      - name: Upload coverage artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-data-${{ matrix.python-version }}
-          path: .coverage
+          path: .coverage.${{ matrix.python-version }}
           retention-days: 3
-          include-hidden-files: true
 
   coverage-report:
     needs: [test-pytest]
@@ -117,11 +123,17 @@ jobs:
           name: coverage-data-3.9
           path: cc-3.9
 
+      - name: Rename coverage file 3.9
+        run: mv cc-3.9/.coverage.3.9 cc-3.9/.coverage
+
       - name: Download coverage 3.10
         uses: actions/download-artifact@v4
         with:
           name: coverage-data-3.10
           path: cc-3.10
+
+      - name: Rename coverage file 3.10
+        run: mv cc-3.10/.coverage.3.10 cc-3.10/.coverage
 
       - name: Download coverage 3.11
         uses: actions/download-artifact@v4
@@ -129,11 +141,17 @@ jobs:
           name: coverage-data-3.11
           path: cc-3.11
 
+      - name: Rename coverage file 3.11
+        run: mv cc-3.11/.coverage.3.11 cc-3.11/.coverage
+
       - name: Download coverage 3.12
         uses: actions/download-artifact@v4
         with:
           name: coverage-data-3.12
           path: cc-3.12
+
+      - name: Rename coverage file 3.12
+        run: mv cc-3.12/.coverage.3.12 cc-3.12/.coverage
 
       - name: Combine coverage
         run: python -m coverage combine cc-3.9 cc-3.10 cc-3.11 cc-3.12
