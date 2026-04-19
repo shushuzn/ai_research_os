@@ -111,35 +111,43 @@ jobs:
           python-version: "3.11"
           cache: 'pip'
 
-      - name: Install coverage
-        run: pip install coverage[toml]
-
-      - name: Download coverage 3.9
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.9
-          path: coverage-data/3.9
-
-      - name: Download coverage 3.10
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.10
-          path: coverage-data/3.10
-
-      - name: Download coverage 3.11
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.11
-          path: coverage-data/3.11
-
-      - name: Download coverage 3.12
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.12
-          path: coverage-data/3.12
-
-      - name: Combine coverage
-        run: python -m coverage combine coverage-data/*/
+      - name: Download and combine coverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+        run: |
+          pip install coverage[toml]
+          python -m coverage erase
+          python - << 'PYEOF'
+          import os, urllib.request, json, zipfile, shutil, subprocess
+          token = os.environ["GITHUB_TOKEN"]
+          run_id = os.environ["RUN_ID"]
+          repo = os.environ["REPO"]
+          headers = {"Authorization": f"token {token}"}
+          # Get artifact list
+          url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/artifacts"
+          req = urllib.request.Request(url, headers=headers)
+          with urllib.request.urlopen(req) as resp:
+              artifacts = json.load(resp)["artifacts"]
+          for ver in ["3.9", "3.10", "3.11", "3.12"]:
+              matching = [a for a in artifacts if a["name"] == f"coverage-report-{ver}"]
+              if not matching:
+                  print(f"No artifact for {ver}")
+                  continue
+              aid = matching[0]["id"]
+              zip_url = f"https://api.github.com/repos/{repo}/actions/artifacts/{aid}/zip"
+              req = urllib.request.Request(zip_url, headers=headers)
+              with urllib.request.urlopen(req) as resp:
+                  data = resp.read()
+              with open(f"coverage-{ver}.zip", "wb") as f:
+                  f.write(data)
+              with zipfile.ZipFile(f"coverage-{ver}.zip", "r") as z:
+                  z.extractall(f"cc-{ver}")
+              os.remove(f"coverage-{ver}.zip")
+              print(f"Downloaded coverage-{ver}")
+          PYEOF
+          python -m coverage combine cc-3.9 cc-3.10 cc-3.11 cc-3.12
 
       - name: Coverage report
         run: python -m coverage report --format=term-missing
