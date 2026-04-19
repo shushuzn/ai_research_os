@@ -80,7 +80,7 @@ jobs:
         run: pip install pytest pytest-cov requests feedparser pymupdf freezegun
 
       - name: Run pytest with coverage
-        run: python -m pytest tests/ -q --tb=short --cov=. --cov-report=json --cov-report=term-missing 2>&1 | tee pytest_output_${{ matrix.python-version }}.txt
+        run: python -m pytest tests/ -q --tb=short --cov=. --cov-report=term-missing 2>&1 | tee pytest_output_${{ matrix.python-version }}.txt
 
       - name: Upload test output
         if: always()
@@ -90,13 +90,14 @@ jobs:
           path: pytest_output_${{ matrix.python-version }}.txt
           retention-days: 1
 
-      - name: Upload coverage report
+      - name: Upload coverage data
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report-${{ matrix.python-version }}
-          path: coverage.json
+          path: .coverage
           retention-days: 3
+          include-hidden-files: true
 
   coverage-report:
     needs: [test-pytest]
@@ -113,12 +114,29 @@ jobs:
       - name: Install coverage
         run: pip install coverage[toml]
 
-      - name: Download coverage reports
+      - name: Download coverage 3.9
         uses: actions/download-artifact@v7
         with:
-          pattern: coverage-report-*
-          path: coverage-reports/
-          merge-multiple: true
+          name: coverage-report-3.9
+          path: coverage-reports/3.9
+
+      - name: Download coverage 3.10
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-report-3.10
+          path: coverage-reports/3.10
+
+      - name: Download coverage 3.11
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-report-3.11
+          path: coverage-reports/3.11
+
+      - name: Download coverage 3.12
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-report-3.12
+          path: coverage-reports/3.12
 
       - name: Combine coverage
         run: python -m coverage combine coverage-reports/
