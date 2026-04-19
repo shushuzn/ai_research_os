@@ -3,7 +3,6 @@ Comprehensive test suite for ai_research_os.py
 Run with: uv run --with requests,feedparser,pyyaml pytest tests/ -v
 """
 import pytest
-import tempfile
 import os
 import re
 import sys
@@ -45,13 +44,6 @@ def make_paper(
         pdf_url=pdf_url,
         primary_category=primary_category,
     )
-
-@pytest.fixture
-def mock_research_root():
-    with tempfile.TemporaryDirectory() as d:
-        root = Path(d)
-        airo.ensure_research_tree(root)
-        yield root
 
 # ---------------------------------------------------------------------------
 # Paper dataclass
