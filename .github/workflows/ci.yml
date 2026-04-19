@@ -114,32 +114,15 @@ jobs:
       - name: Install coverage
         run: pip install coverage[toml]
 
-      - name: Download coverage 3.9
+      - name: Download coverage data
         uses: actions/download-artifact@v4
         with:
-          name: coverage-report-3.9
-          path: coverage-reports/3.9
-
-      - name: Download coverage 3.10
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.10
-          path: coverage-reports/3.10
-
-      - name: Download coverage 3.11
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.11
-          path: coverage-reports/3.11
-
-      - name: Download coverage 3.12
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-3.12
-          path: coverage-reports/3.12
+          pattern: coverage-report-*
+          path: coverage-data
+          merge-multiple: true
 
       - name: Combine coverage
-        run: python -m coverage combine coverage-reports/
+        run: python -m coverage combine coverage-data/
 
       - name: Coverage report
         run: python -m coverage report --format=term-missing
