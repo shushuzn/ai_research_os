@@ -1,12 +1,13 @@
 """Cosine similarity ranking strategy — numpy-accelerated."""
 from __future__ import annotations
 
-import struct
 from typing import List
 
 import numpy as np
 
-from rankers.base import RankedResult, Ranker
+from rankers.base import Ranker
+
+RankedResult = Ranker.RankedResult
 
 
 class CosineSimilarityRanker(Ranker):
@@ -84,7 +85,6 @@ class CosineSimilarityRanker(Ranker):
         # Compute cosine similarities only for non-zero-norm rows
         nz_matrix = emb_matrix[nonzero]
         nz_norms = norms[nonzero]
-        nz_indices = [orig_indices[i] for i in range(len(nonzero)) if nonzero[i]]
 
         # Prevent div-by-zero in similarity: q_norm is already checked above
         nz_sims = (nz_matrix @ q_vec) / (nz_norms * q_norm)   # (M,)
