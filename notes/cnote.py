@@ -123,7 +123,7 @@ def auto_fill_cnotes_with_ai(
     Returns:
         List of (concept, status) tuples: status is 'filled' | 'skipped' | 'no-papers'
     """
-    import ai_research_os as airo
+    from llm.generate import ai_generate_cnote_draft
     from notes.pnotes import pnotes_by_tag, read_pnote_metadata
 
     results = []
@@ -162,7 +162,7 @@ def auto_fill_cnotes_with_ai(
         pnotes_meta = [read_pnote_metadata(p) for p in pnote_paths]
 
         try:
-            draft = airo.ai_generate_cnote_draft(
+            draft = ai_generate_cnote_draft(
                 concept=concept,
                 pnotes=pnotes_meta,
                 api_key=api_key,
