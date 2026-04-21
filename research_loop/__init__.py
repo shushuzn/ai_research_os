@@ -22,7 +22,7 @@ from typing import List, Optional, Tuple
 
 from core import Paper
 from core.basics import ensure_research_tree, get_default_concept_dir, safe_uid, slugify_title
-from llm.generate import ai_generate_pnote_draft
+from llm.generate import ai_generate_pnote_draft, estimate_cost
 from llm.parse import parse_ai_pnote_draft, extract_rubric_scores
 from notes.cnote import ensure_cnote, update_cnote_links
 from parsers.arxiv_search import search_arxiv
@@ -157,11 +157,13 @@ def run_research(
         note_tags = tgs or []
         draft = ""
         rubric = {}
+        cost_info: dict = {}
 
         if a_key and extracted_text:
             try:
                 if verbose:
-                    print("  [llm] Generating draft...")
+                    print("  [llm] Generating draft (streaming)...")
+                input_for_llm = f"Title: {paper.title}\nAbstract: {paper.abstract or ''}\n\nExtracted text:\n{extracted_text[:8000]}"
                 draft = ai_generate_pnote_draft(
                     paper=paper,
                     tags=note_tags,
@@ -169,10 +171,17 @@ def run_research(
                     base_url=b_url,
                     api_key=a_key,
                     model=mod,
+                    stream=True,
+                    verbose=verbose,
                 )
                 sections, rubric, _ = parse_ai_pnote_draft(draft)
+                cost_info = estimate_cost(mod, input_for_llm, draft)
                 if verbose:
-                    print(f"  [llm] Draft generated ({len(draft)} chars)")
+                    print(
+                        f"  [llm] Draft generated ({len(draft)} chars, "
+                        f"≈{cost_info.get('total_tokens', 0)} tokens, "
+                        f"${cost_info.get('total_cost_usd', 0):.4f})"
+                    )
             except Exception as e:
                 warnings.warn(f"LLM draft generation failed for {paper.uid}: {e}", stacklevel=2)
                 draft = ""
