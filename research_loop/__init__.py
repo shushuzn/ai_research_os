@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from core import Paper
-from core.basics import ensure_research_tree, safe_uid, slugify_title
+from core.basics import ensure_research_tree, get_default_concept_dir, safe_uid, slugify_title
 from llm.generate import ai_generate_pnote_draft
 from llm.parse import parse_ai_pnote_draft, extract_rubric_scores
 from notes.cnote import ensure_cnote, update_cnote_links
@@ -213,7 +213,7 @@ def run_research(
 
         # For each tag: create/verify C-note and link it
         for tag in note_tags:
-            concept_dir = root / "01-Foundations"
+            concept_dir = root / get_default_concept_dir()
             cpath = ensure_cnote(concept_dir, tag)
             update_cnote_links(cpath, note_path)
 

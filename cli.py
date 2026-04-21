@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 from db import Database
 from db.database import ExperimentTableRecord
 from core import DOI_RESOLVER, Paper, today_iso
-from core.basics import ensure_research_tree, safe_uid, slugify_title
+from core.basics import ensure_research_tree, get_default_concept_dir, get_default_radar_dir, safe_uid, slugify_title
 from llm.generate import ai_generate_pnote_draft
 from notes.cnote import auto_fill_cnotes_with_ai, ensure_cnote, update_cnote_links
 from notes.mnote import ensure_or_update_mnote, pick_top3_pnotes_for_tag
@@ -2440,8 +2440,8 @@ def _main_legacy(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--root", default="AI-Research", help="Root folder for your research OS")
     parser.add_argument("--category", default="02-Models", help="Folder under root to place P-Note")
     parser.add_argument("--tags", default="", help="Comma-separated tags (recommended), e.g. LLM,Agent,RAG")
-    parser.add_argument("--concept-dir", default="01-Foundations", help="Folder under root to place C-Notes")
-    parser.add_argument("--comparison-dir", default="00-Radar", help="Folder under root to place M-Notes")
+    parser.add_argument("--concept-dir", default=get_default_concept_dir(), help="Folder under root to place C-Notes")
+    parser.add_argument("--comparison-dir", default=get_default_radar_dir(), help="Folder under root to place M-Notes")
     parser.add_argument("--max-pages", type=int, default=None, help="Max PDF pages to extract")
 
     # Local PDF (paywalled/subscription papers)
