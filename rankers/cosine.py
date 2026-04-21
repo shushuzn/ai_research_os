@@ -5,9 +5,7 @@ from typing import List
 
 import numpy as np
 
-from rankers.base import Ranker
-
-RankedResult = Ranker.RankedResult
+from rankers.base import RankedResult, Ranker
 
 
 class CosineSimilarityRanker(Ranker):
