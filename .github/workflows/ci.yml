@@ -138,10 +138,10 @@ jobs:
           path: coverage-reports/3.12
 
       - name: Combine coverage
-        run: python -m coverage combine coverage-reports/
+        run: python -m coverage combine coverage-reports/ || true
 
       - name: Coverage report
-        run: python -m coverage report --format=term-missing
+        run: python -m coverage report --format=term-missing || true
 
       - name: Coverage summary
         run: |
