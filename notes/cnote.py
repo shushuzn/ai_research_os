@@ -126,9 +126,6 @@ def auto_fill_cnotes_with_ai(
     import ai_research_os as airo
     from notes.pnotes import pnotes_by_tag, read_pnote_metadata
 
-    # Import here to avoid circular dependency
-    ai_generate_cnote_draft = airo.ai_generate_cnote_draft
-
     results = []
     tag_map = pnotes_by_tag(root)
     concept_dir = root / "01-Foundations"
@@ -165,7 +162,7 @@ def auto_fill_cnotes_with_ai(
         pnotes_meta = [read_pnote_metadata(p) for p in pnote_paths]
 
         try:
-            draft = ai_generate_cnote_draft(
+            draft = airo.ai_generate_cnote_draft(
                 concept=concept,
                 pnotes=pnotes_meta,
                 api_key=api_key,
