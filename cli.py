@@ -34,17 +34,17 @@ from sections.segment import format_section_snippets, segment_into_sections, seg
 from updaters.radar import update_radar
 from updaters.timeline import update_timeline
 
-KEYWORD_TAGS = [
-    (r"\bagent(s)?\b|tool\s*use|function\s*calling", "Agent"),
-    (r"\brag\b|retrieval\-augmented|retrieval augmented", "RAG"),
-    (r"\bmoe\b|mixture of experts", "MoE"),
-    (r"\brlhf\b|preference optimization|dpo\b", "Alignment"),
-    (r"\bevaluation\b|benchmark", "Evaluation"),
-    (r"\bcompiler\b|kernel|cuda|inference", "Infrastructure"),
-    (r"\bmultimodal\b|vision|audio", "Multimodal"),
-    (r"\bcompression\b|quantization|distillation", "Optimization"),
-    (r"\blong context\b|context length", "LongContext"),
-    (r"\bsafety\b|jailbreak|red teaming", "Safety"),
+_KEYWORD_TAG_PATTERNS = [
+    (re.compile(r"\bagent(s)?\b|tool\s*use|function\s*calling", re.I), "Agent"),
+    (re.compile(r"\brag\b|retrieval\-augmented|retrieval augmented", re.I), "RAG"),
+    (re.compile(r"\bmoe\b|mixture of experts", re.I), "MoE"),
+    (re.compile(r"\brlhf\b|preference optimization|dpo\b", re.I), "Alignment"),
+    (re.compile(r"\bevaluation\b|benchmark", re.I), "Evaluation"),
+    (re.compile(r"\bcompiler\b|kernel|cuda|inference", re.I), "Infrastructure"),
+    (re.compile(r"\bmultimodal\b|vision|audio", re.I), "Multimodal"),
+    (re.compile(r"\bcompression\b|quantization|distillation", re.I), "Optimization"),
+    (re.compile(r"\blong context\b|context length", re.I), "LongContext"),
+    (re.compile(r"\bsafety\b|jailbreak|red teaming", re.I), "Safety"),
 ]
 
 
@@ -53,8 +53,8 @@ def infer_tags_if_empty(tags: List[str], paper: Paper) -> List[str]:
         return tags
     text = f"{paper.title}\n{paper.abstract}".lower()
     out = []
-    for pat, tg in KEYWORD_TAGS:
-        if re.search(pat, text, flags=re.I):
+    for pat, tg in _KEYWORD_TAG_PATTERNS:
+        if pat.search(text):
             out.append(tg)
     return out if out else ["Unsorted"]
 
@@ -114,31 +114,72 @@ def _build_research_parser(subparsers) -> argparse.ArgumentParser:
     )
     p.add_argument("-v", "--verbose", action="store_true", default=False, help="Verbose output")
     p.add_argument("--lang", type=str, default="zh", choices=["en", "zh", "e", "z"], help="Output language (default: zh)")
+    p.add_argument(
+        "--async",
+        dest="async_mode",
+        action="store_true",
+        default=False,
+        help="Use async I/O for concurrent PDF download and LLM streaming",
+    )
+    p.add_argument(
+        "--progress",
+        dest="progress",
+        action="store_true",
+        default=False,
+        help="Print LLM streaming tokens in real time (implies --async)",
+    )
     return p
 
 
 def _run_research_cmd(args: argparse.Namespace) -> int:
+    import asyncio
+    import sys
+
     from core.i18n import set_lang
-    from pathlib import Path
+    from research_loop import arun_research
 
     set_lang(args.lang)
+
+    # --progress implies --async
+    if args.progress:
+        args.async_mode = True
 
     output_dir = Path(args.output) if args.output else None
     tags = args.tags if args.tags else []
     skip_existing = not args.no_skip
 
-    paths = run_research(
-        query=args.query,
-        limit=args.limit,
-        output_dir=output_dir,
-        download_pdfs=not args.no_pdf,
-        skip_existing=skip_existing,
-        tags=tags,
-        model=args.model,
-        base_url=args.base_url or None,
-        api_key=(args.api_key or None) if not args.no_ai else "",
-        verbose=args.verbose,
-    )
+    # progress_callback prints each streaming chunk to stdout
+    progress_cb = sys.stdout.write if args.progress else None
+
+    if args.async_mode:
+        paths = asyncio.run(
+            arun_research(
+                query=args.query,
+                limit=args.limit,
+                output_dir=output_dir,
+                download_pdfs=not args.no_pdf,
+                skip_existing=skip_existing,
+                tags=tags,
+                model=args.model,
+                base_url=args.base_url or None,
+                api_key=(args.api_key or None) if not args.no_ai else "",
+                verbose=args.verbose,
+                progress_callback=progress_cb,
+            )
+        )
+    else:
+        paths = run_research(
+            query=args.query,
+            limit=args.limit,
+            output_dir=output_dir,
+            download_pdfs=not args.no_pdf,
+            skip_existing=skip_existing,
+            tags=tags,
+            model=args.model,
+            base_url=args.base_url or None,
+            api_key=(args.api_key or None) if not args.no_ai else "",
+            verbose=args.verbose,
+        )
 
     if not paths:
         print("No notes generated.")
