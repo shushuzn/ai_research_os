@@ -283,8 +283,8 @@ class TestAutoFillCnotesWithAi:
         concept_dir.mkdir(parents=True)
         pnote_dir = tmp_path / "02-Papers"
         pnote_dir.mkdir(parents=True)
-        # C-note with all sections filled
-        cnote = concept_dir / "C - Filled.md"
+        # C-note with all sections filled (note: filename uses lowercase 'filled' to match tag)
+        cnote = concept_dir / "C - filled.md"
         cnote.write_text(
             "## 核心定义\nMeaningful content.\n\n"
             "## 产生背景\nBackground info.\n\n"
@@ -368,7 +368,7 @@ class TestAutoFillCnotesWithAi:
         # All sections short and without sentence-ending punctuation -> considered empty
         # -> AI draft should be triggered and C-note updated
         existing_content = "## 核心定义\nExisting."  # short, no ending punctuation
-        cnote = concept_dir / "C - Existing.md"
+        cnote = concept_dir / "C - existing.md"
         cnote.write_text(existing_content, encoding="utf-8")
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"existing": [("2024-01-01", pnote)]}):
