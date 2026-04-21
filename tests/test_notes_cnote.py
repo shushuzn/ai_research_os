@@ -301,6 +301,7 @@ class TestAutoFillCnotesWithAi:
                     base_url="https://api.example.com",
                     model="test-model",
                     min_papers=1,
+                    call_llm=lambda **kwargs: "## 核心定义\nFilled.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
                 )
         assert ("filled", "skipped") in results
 
