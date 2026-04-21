@@ -20,6 +20,16 @@ from notes.cnote import (
 )
 
 
+# Module-level mocks for ai_generate_cnote_draft — defined here to avoid
+# late-binding issues in pytest parallel execution where lambda side_effects
+# inside 'with patch()' fail to intercept the call.
+_CNOTE_DRAFT = ""
+
+
+def _mock_ai_generate_cnote_draft(**kwargs):
+    return _CNOTE_DRAFT
+
+
 # ============================================================================
 # Test ensure_cnote
 # ============================================================================
@@ -317,10 +327,12 @@ class TestAutoFillCnotesWithAi:
             "## 产生背景\nAI generated background.\n\n"
             "## 技术本质\nAI generated technical content."
         )
+        global _CNOTE_DRAFT
+        _CNOTE_DRAFT = generated_draft
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"concept": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "Concept"}):
-                with patch("ai_research_os.ai_generate_cnote_draft", return_value=generated_draft) as mock_gen:
+                with patch("ai_research_os.ai_generate_cnote_draft", side_effect=_mock_ai_generate_cnote_draft) as mock_gen:
                     results = auto_fill_cnotes_with_ai(
                         root=tmp_path,
                         api_key="fake-key",
@@ -374,11 +386,14 @@ class TestAutoFillCnotesWithAi:
         cnote = concept_dir / "C - Existing.md"
         cnote.write_text(existing_content, encoding="utf-8")
 
+        global _CNOTE_DRAFT
+        _CNOTE_DRAFT = "## 核心定义\nNew core.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech."
+
         with patch("notes.pnotes.pnotes_by_tag", return_value={"existing": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "Existing"}):
                 with patch(
                     "ai_research_os.ai_generate_cnote_draft",
-                    return_value="## 核心定义\nNew core.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
+                    side_effect=_mock_ai_generate_cnote_draft,
                 ):
                     results = auto_fill_cnotes_with_ai(
                         root=tmp_path,
@@ -400,11 +415,14 @@ class TestAutoFillCnotesWithAi:
         pnote = pnote_dir / "P - New.md"
         pnote.write_text("tags: [new]\n\n# New\n\nContent.", encoding="utf-8")
 
+        global _CNOTE_DRAFT
+        _CNOTE_DRAFT = "## 核心定义\nCore.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech."
+
         with patch("notes.pnotes.pnotes_by_tag", return_value={"new": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "New"}):
                 with patch(
                     "ai_research_os.ai_generate_cnote_draft",
-                    return_value="## 核心定义\nCore.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
+                    side_effect=_mock_ai_generate_cnote_draft,
                 ):
                     results = auto_fill_cnotes_with_ai(
                         root=tmp_path,
