@@ -286,12 +286,7 @@ class PaperRecord:
         except Exception:
             warnings.warn(f"PaperRecord.from_row: failed to parse latex_blocks JSON for paper {d.get('id', '?')}", stacklevel=2)
             latex_blocks = []
-        tags = cls._get_tags_for_paper(d["id"])
-        return cls(authors=authors, latex_blocks=latex_blocks, tags=tags, **d)
-
-    @staticmethod
-    def _get_tags_for_paper(paper_id: str) -> List[str]:
-        return []  # filled by Database.get_paper
+        return cls(authors=authors, latex_blocks=latex_blocks, tags=[], **d)
 
 
 # ─── Database ─────────────────────────────────────────────────────────────────
