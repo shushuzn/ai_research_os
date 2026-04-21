@@ -13,6 +13,7 @@ already present in ai_research_os.
 import datetime as dt
 import os
 import sys
+import tempfile
 import time  # noqa: F401  # tests mock research_loop.time.sleep
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -135,7 +136,7 @@ def run_research(
             extracted_text = ""
             for attempt in range(2):
                 try:
-                    pdf_path = Path(f"/tmp/{safe_uid(paper.uid)}.pdf")
+                    pdf_path = Path(tempfile.gettempdir()) / f"{safe_uid(paper.uid)}.pdf"
                     _download_pdf(paper.pdf_url, pdf_path, timeout=60)
                     if verbose:
                         print(f"  [pdf] Downloaded: {pdf_path.name} ({pdf_path.stat().st_size / 1024:.0f} KB)")
