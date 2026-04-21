@@ -320,17 +320,16 @@ class TestAutoFillCnotesWithAi:
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"concept": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "Concept"}):
-                with patch("ai_research_os.call_llm_chat_completions", return_value=generated_draft) as mock_gen:
-                    results = auto_fill_cnotes_with_ai(
-                        root=tmp_path,
-                        api_key="fake-key",
-                        base_url="https://api.example.com",
-                        model="test-model",
-                        min_papers=1,
-                    )
+                results = auto_fill_cnotes_with_ai(
+                    root=tmp_path,
+                    api_key="fake-key",
+                    base_url="https://api.example.com",
+                    model="test-model",
+                    min_papers=1,
+                    call_llm=lambda **kwargs: generated_draft,
+                )
 
         assert ("concept", "filled") in results
-        mock_gen.assert_called_once()
 
         # Verify C-note was updated
         cnote_path = concept_dir / "C - concept.md"
@@ -347,17 +346,14 @@ class TestAutoFillCnotesWithAi:
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"fail": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "Fail"}):
-                with patch(
-                    "ai_research_os.call_llm_chat_completions",
-                    side_effect=RuntimeError("API error"),
-                ):
-                    results = auto_fill_cnotes_with_ai(
-                        root=tmp_path,
-                        api_key="fake-key",
-                        base_url="https://api.example.com",
-                        model="test-model",
-                        min_papers=1,
-                    )
+                results = auto_fill_cnotes_with_ai(
+                    root=tmp_path,
+                    api_key="fake-key",
+                    base_url="https://api.example.com",
+                    model="test-model",
+                    min_papers=1,
+                    call_llm=lambda **kwargs: (_ for _ in ()).throw(RuntimeError("API error")),
+                )
         assert ("fail", "failed") in results
 
     def test_existing_cnote_read_before_ai_call(self, tmp_path):
@@ -376,17 +372,14 @@ class TestAutoFillCnotesWithAi:
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"existing": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "Existing"}):
-                with patch(
-                    "ai_research_os.call_llm_chat_completions",
-                    return_value="## 核心定义\nNew core.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
-                ):
-                    results = auto_fill_cnotes_with_ai(
-                        root=tmp_path,
-                        api_key="fake-key",
-                        base_url="https://api.example.com",
-                        model="test-model",
-                        min_papers=1,
-                    )
+                results = auto_fill_cnotes_with_ai(
+                    root=tmp_path,
+                    api_key="fake-key",
+                    base_url="https://api.example.com",
+                    model="test-model",
+                    min_papers=1,
+                    call_llm=lambda **kwargs: "## 核心定义\nNew core.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
+                )
 
         assert ("existing", "filled") in results
 
@@ -402,17 +395,14 @@ class TestAutoFillCnotesWithAi:
 
         with patch("notes.pnotes.pnotes_by_tag", return_value={"new": [("2024-01-01", pnote)]}):
             with patch("notes.pnotes.read_pnote_metadata", return_value={"title": "New"}):
-                with patch(
-                    "ai_research_os.call_llm_chat_completions",
-                    return_value="## 核心定义\nCore.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
-                ):
-                    results = auto_fill_cnotes_with_ai(
-                        root=tmp_path,
-                        api_key="fake-key",
-                        base_url="https://api.example.com",
-                        model="test-model",
-                        min_papers=1,
-                    )
+                results = auto_fill_cnotes_with_ai(
+                    root=tmp_path,
+                    api_key="fake-key",
+                    base_url="https://api.example.com",
+                    model="test-model",
+                    min_papers=1,
+                    call_llm=lambda **kwargs: "## 核心定义\nCore.\n\n## 产生背景\nBg.\n\n## 技术本质\nTech.",
+                )
 
         # Should succeed even though 01-Foundations didn't exist
         assert ("new", "filled") in results
