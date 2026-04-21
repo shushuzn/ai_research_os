@@ -17,7 +17,10 @@ import os
 import sys
 import tempfile
 import time  # tests mock research_loop.time.sleep
+import logging
 import warnings
+
+logger = logging.getLogger(__name__)
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
@@ -474,7 +477,6 @@ async def arun_research(
                             continue
                         err = "pdf_failed"
                         warnings.warn(f"PDF download/extract failed for {paper.uid} after retry: {e}", stacklevel=2)
-                    break
 
             note_tags = list(tags) if tags else []
             draft = ""
@@ -568,3 +570,26 @@ async def arun_research(
         flush_radar(root)
 
     return output_paths
+
+
+# ─── Metrics ───────────────────────────────────────────────────────────────────
+
+
+class Metrics:
+    """Tracks research loop execution statistics."""
+
+    def __init__(self):
+        self.papers_processed = 0
+        self.papers_failed = 0
+        self.papers_skipped = 0
+        self.llm_calls = 0
+        self.llm_cost_usd = 0.0
+
+    def snapshot(self) -> dict:
+        return {
+            "papers_processed": self.papers_processed,
+            "papers_failed": self.papers_failed,
+            "papers_skipped": self.papers_skipped,
+            "llm_calls": self.llm_calls,
+            "llm_cost_usd": self.llm_cost_usd,
+        }
