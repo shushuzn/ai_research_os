@@ -86,7 +86,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-data-${{ matrix.python-version }}
+          name: coverage-data-${{ github.run_id }}-${{ matrix.python-version }}
           path: .coverage
           retention-days: 3
 
@@ -94,7 +94,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-output-${{ matrix.python-version }}
+          name: pytest-output-${{ github.run_id }}-${{ matrix.python-version }}
           path: pytest_output_${{ matrix.python-version }}.txt
           retention-days: 1
 
@@ -116,25 +116,25 @@ jobs:
       - name: Download coverage data 3.9
         uses: actions/download-artifact@v4
         with:
-          name: coverage-data-3.9
+          name: coverage-data-${{ github.run_id }}-3.9
           path: coverage-reports/3.9
 
       - name: Download coverage data 3.10
         uses: actions/download-artifact@v4
         with:
-          name: coverage-data-3.10
+          name: coverage-data-${{ github.run_id }}-3.10
           path: coverage-reports/3.10
 
       - name: Download coverage data 3.11
         uses: actions/download-artifact@v4
         with:
-          name: coverage-data-3.11
+          name: coverage-data-${{ github.run_id }}-3.11
           path: coverage-reports/3.11
 
       - name: Download coverage data 3.12
         uses: actions/download-artifact@v4
         with:
-          name: coverage-data-3.12
+          name: coverage-data-${{ github.run_id }}-3.12
           path: coverage-reports/3.12
 
       - name: Combine coverage
