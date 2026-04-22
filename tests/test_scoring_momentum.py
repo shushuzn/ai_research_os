@@ -28,7 +28,7 @@ def rm_populated(rm):
     rm.kg.add_edge(p1, t1, "same_tag")
     rm.kg.add_edge(p2, t1, "same_tag")
     rm.score_paper("p1")
-    return {"p1": p1, "p2": p2, "t1": t1, "kg": rm.kg}
+    return rm
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ class TestResearchMomentumTagScoring:
             return {"LLM": {"score": 80}}
         m.ResearchMomentum._load_radar = fake_load
         try:
-            rm = ResearchMomentum(kg=rm_populated["kg"])
+            rm = ResearchMomentum(kg=rm_populated.kg)
             result = rm.score_tag("LLM")
             assert result["heat_trend"] == "rising"
             assert result["momentum_label"] == "hot"

@@ -1,6 +1,13 @@
 """Tests for viz/pyvis_renderer.py."""
+import pytest
 
 from unittest.mock import MagicMock, patch
+
+try:
+    import pyvis
+    _PYVIS_AVAILABLE = True
+except ImportError:
+    _PYVIS_AVAILABLE = False
 
 
 class TestKGVizRendererInit:
@@ -17,6 +24,7 @@ class TestKGVizRendererInit:
         assert isinstance(renderer.kg, KGManager)
 
 
+@pytest.mark.skipif(not _PYVIS_AVAILABLE, reason="pyvis not available")
 class TestKGVizRendererBaseNet:
     def test_base_net_creates_network(self):
         from viz.pyvis_renderer import KGVizRenderer
@@ -78,6 +86,7 @@ class TestKGVizRendererAddNodes:
         assert len(call.kwargs["label"]) <= 60  # label truncated
 
 
+@pytest.mark.skipif(not _PYVIS_AVAILABLE, reason="pyvis not available")
 class TestKGVizRendererPaperGraph:
     def test_paper_graph_uses_pyvis_when_available(self):
         from viz.pyvis_renderer import KGVizRenderer
@@ -122,6 +131,7 @@ class TestKGVizRendererPaperGraph:
         assert "not found" in result
 
 
+@pytest.mark.skipif(not _PYVIS_AVAILABLE, reason="pyvis not available")
 class TestKGVizRendererTagGraph:
     def test_tag_graph_uses_pyvis_when_available(self):
         from viz.pyvis_renderer import KGVizRenderer
@@ -166,6 +176,7 @@ class TestKGVizRendererTagGraph:
         assert "No papers found" in result
 
 
+@pytest.mark.skipif(not _PYVIS_AVAILABLE, reason="pyvis not available")
 class TestKGVizRendererFullGraph:
     def test_full_graph_uses_pyvis_when_available(self):
         from viz.pyvis_renderer import KGVizRenderer
