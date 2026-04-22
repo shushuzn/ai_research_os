@@ -4,7 +4,7 @@ import json
 
 try:
     from pyvis.network import Network
-    _HAS_PYVIS = True
+    _HAS_PYVIS = False
 except ImportError:
     _HAS_PYVIS = False
 

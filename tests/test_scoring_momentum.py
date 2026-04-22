@@ -27,6 +27,7 @@ def rm_populated(rm):
     rm.kg.add_edge(p2, p1, "cite")
     rm.kg.add_edge(p1, t1, "same_tag")
     rm.kg.add_edge(p2, t1, "same_tag")
+    rm.score_paper("p1")
     return {"p1": p1, "p2": p2, "t1": t1, "kg": rm.kg}
 
 
