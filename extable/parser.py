@@ -65,7 +65,7 @@ class ExperimentTableParser:
             h_clean = h.strip()
             if not h_clean:
                 continue
-            if any(kw in h_clean for kw in ["accuracy", "precision", "recall", "f1", "bleu", "rouge", "ppl", "perplexity", "auc"]):
+            if any(kw in h_clean for kw in ["accuracy", "precision", "recall", "f1", "bleu", "rouge", "ppl", "perplexity", "auc", "score"]):
                 metric_cols.append((i, h_clean))
             elif any(kw in h_clean for kw in ["dataset", "bench", "task", "corpus"]):
                 dataset_cols.append((i, h_clean))
@@ -91,8 +91,13 @@ class ExperimentTableParser:
         our_keywords = ["ours", "our", "proposed", "this", "method", "approach", "system"]
         is_our_row = False
 
+        # Number of special (dataset/model) column slots consumed
+        num_special = len(dataset_cols) + len(model_cols)
         for row_idx, row in enumerate(rows):
-            if len(row) <= max(i for i, _ in metric_cols or [(0,)]) + max(i for i, _ in dataset_cols or [(0,)]) + max(i for i, _ in model_cols or [(0,)]):
+            if len(row) < 2:
+                continue
+            # Skip rows that are too short (need at least model + metric)
+            if len(row) < num_special + 1:
                 continue
 
             # Model name
@@ -134,15 +139,18 @@ class ExperimentTableParser:
                         if not is_our_row and model_name:
                             baselines[model_name] = val
 
-        # Deduplicate metrics by name
-        unique_metrics: dict[str, float] = {}
+        # Deduplicate: keep unique (name, value) pairs
+        seen: set[tuple] = set()
+        unique_metrics = []
         for m in metrics:
-            if m["name"] not in unique_metrics or m["value"] > unique_metrics[m["name"]]:
-                unique_metrics[m["name"]] = m["value"]
+            key = (m["name"], m["value"])
+            if key not in seen:
+                seen.add(key)
+                unique_metrics.append(m)
 
         tables.append({
             "caption": title,
-            "metrics": [{"name": k, "value": v} for k, v in unique_metrics.items()],
+            "metrics": [{"name": m["name"], "value": m["value"]} for m in unique_metrics],
             "datasets": sorted(datasets),
             "models": sorted(models),
             "baselines": baselines,
@@ -191,13 +199,18 @@ class ExperimentTableParser:
             method="POST",
         )
 
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode())
-            content = result["choices"][0]["message"]["content"]
-            # Strip markdown code fences
-            content = content.strip()
-            if content.startswith("```"):
-                content = content.split("```")[1]
-                if content.startswith("json"):
-                    content = content[4:]
-            return json.loads(content.strip())
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                result = json.loads(resp.read().decode())
+                content = result["choices"][0]["message"]["content"]
+        except Exception:
+            # Fall back to regex parse on LLM error
+            return self._regex_parse(table_data, title)
+
+        # Strip markdown code fences
+        content = content.strip()
+        if content.startswith("```"):
+            content = content.split("```")[1]
+            if content.startswith("json"):
+                content = content[4:]
+        return json.loads(content.strip())
