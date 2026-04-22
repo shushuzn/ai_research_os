@@ -11,10 +11,8 @@ All components are normalised to [0, 100].
 
 import json
 import math
-import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from kg.manager import KGManager
 
@@ -50,14 +48,12 @@ class ResearchMomentum:
         if node is None:
             return 0.0
 
-        props = node.get("properties", {})
         score = self._compute_score(node)
         self._scores[paper_uid] = score
         return score
 
     def _compute_score(self, node: dict) -> float:
         props = node.get("properties", {})
-        authors = props.get("authors", [])
         year = props.get("year")
         tags = []
 

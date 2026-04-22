@@ -1,6 +1,5 @@
 """Tests for viz/pyvis_renderer.py."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 

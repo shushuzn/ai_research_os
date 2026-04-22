@@ -1,6 +1,5 @@
 """Tests for viz/d3_renderer.py."""
 
-import pytest
 from unittest.mock import MagicMock
 
 
@@ -29,7 +28,7 @@ class TestD3ForceGraphToJson:
     def test_paper_uids_returns_ego_subgraph(self):
         from viz.d3_renderer import D3ForceGraph
         kg = MagicMock()
-        subgraph = {
+        _ = {
             "nodes": [{"id": "p1", "label": "Paper 1", "type": "Paper", "entity_id": ""}],
             "edges": [{"id": "e1", "source_id": "p1", "target_id": "p2", "relation_type": "cites", "weight": 1.0}],
         }

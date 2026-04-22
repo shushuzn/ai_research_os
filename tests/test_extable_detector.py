@@ -213,7 +213,7 @@ class TestTableDetectorExtractAll:
             mock_open.return_value = mock_doc
             with patch.object(TableDetector, "detect_tables", return_value=[]) as mock_detect:
                 detector = TableDetector()
-                result = detector.extract_all_tables(Path("fake.pdf"), max_pages=2)
+                _ = detector.extract_all_tables(Path("fake.pdf"), max_pages=2)
                 assert mock_detect.call_count == 2
 
     def test_extract_all_tables_respects_max_pages(self, _fitz_available):

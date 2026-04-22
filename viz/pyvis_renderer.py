@@ -1,7 +1,6 @@
 """PyVis-based interactive KG visualization."""
 
 import json
-from pathlib import Path
 
 try:
     from pyvis.network import Network
@@ -75,12 +74,12 @@ class KGVizRenderer:
 
         center_node = subgraph.get("center")
         if center_node:
-            net.set_options(f"""
-            {{
-                "nodes": {{"font": {{"size": 14}}}},
-                "edges": {{"color": {{"inherit": true}}, "width": 1}},
-                "physics": {{"enabled": true, "forceAtlas2Based": {{"gravitationalConstant": -80}}, "solver": "forceAtlas2Based"}}
-            }}
+            net.set_options("""
+            {
+                "nodes": {"font": {"size": 14}},
+                "edges": {"color": {"inherit": true}, "width": 1},
+                "physics": {"enabled": true, "forceAtlas2Based": {"gravitationalConstant": -80}, "solver": "forceAtlas2Based"}
+            }
             """)
 
         return net.generate_html()

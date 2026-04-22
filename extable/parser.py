@@ -2,8 +2,6 @@
 
 import json
 import re
-from pathlib import Path
-from typing import Any, Optional
 
 
 class ExperimentTableParser:
@@ -74,7 +72,7 @@ class ExperimentTableParser:
 
         # If we have metrics but can't find columns, treat all numeric cols as metrics
         if not metric_cols:
-            for i, row in enumerate(rows[:3]):
+            for _i, row in enumerate(rows[:3]):
                 for j, cell in enumerate(row):
                     if self._TABLE_NUM.match(cell.strip()):
                         metric_cols.append((j, f"metric_{j}"))
@@ -93,7 +91,7 @@ class ExperimentTableParser:
 
         # Number of special (dataset/model) column slots consumed
         num_special = len(dataset_cols) + len(model_cols)
-        for row_idx, row in enumerate(rows):
+        for _row_idx, row in enumerate(rows):
             if len(row) < 2:
                 continue
             # Skip rows that are too short (need at least model + metric)

@@ -2,7 +2,6 @@
 
 import re
 from pathlib import Path
-from typing import Optional
 
 
 _METRIC_KEYWORDS = [
@@ -25,7 +24,7 @@ class TableDetector:
     def __init__(self):
         self._has_fitz = True
         try:
-            import fitz  # PyMuPDF
+            import fitz  # noqa: F401  # PyMuPDF - check availability
         except ImportError:
             self._has_fitz = False
 

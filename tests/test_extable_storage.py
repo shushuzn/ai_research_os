@@ -1,11 +1,8 @@
 """Tests for extable/storage.py — ExperimentDB."""
 from __future__ import annotations
 
-import json
 import sqlite3
-import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -22,7 +19,7 @@ def db(tmp_path):
 class TestExperimentDBInit:
     def test_init_creates_parent_directory(self, tmp_path):
         db_path = tmp_path / "subdir" / "test.db"
-        db = ExperimentDB(db_path=str(db_path))
+        _ = ExperimentDB(db_path=str(db_path))
         assert Path(db_path).parent.exists()
 
     def test_init_creates_tables(self, db):
@@ -71,7 +68,7 @@ class TestExperimentDBTableOps:
             "ours_best": {"value": 91.2, "dataset": "SQuAD", "metric": "accuracy"},
         }
         raw_table = [["Model", "Accuracy"], ["BERT", "91.2"]]
-        table_id = db.add_table("paper-1", table_struct, raw_table)
+        table_id = db.add_table("paper-1", table_struct, raw_table)  # noqa: F841
         assert isinstance(table_id, str)
         assert len(table_id) == 36
 
@@ -86,7 +83,7 @@ class TestExperimentDBTableOps:
             "ours_best": {"value": 91.2, "dataset": "SQuAD", "metric": "accuracy"},
         }
         raw_table = [["Model", "Accuracy"], ["BERT", "91.2"]]
-        table_id = db.add_table("paper-1", table_struct, raw_table)
+        table_id = db.add_table("paper-1", table_struct, raw_table)  # noqa: F841
         tables = db.get_paper_tables("paper-1")
         assert len(tables) == 1
         t = tables[0]

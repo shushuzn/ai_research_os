@@ -713,7 +713,7 @@ def _build_kg_parser(subparsers) -> argparse.ArgumentParser:
     pp.add_argument("idB", help="Second node ID or paper UID")
 
     # kg stats
-    sp = sub.add_parser("stats", help="KG statistics (nodes/edges by type)")
+    _ = sub.add_parser("stats", help="KG statistics (nodes/edges by type)")
 
     # kg rebuild
     rp = sub.add_parser("rebuild", help="Rebuild KG from papers.json")
@@ -730,7 +730,7 @@ def _build_kg_parser(subparsers) -> argparse.ArgumentParser:
 
 def _run_kg(args: argparse.Namespace) -> int:
     kg = KGManager()
-    q = KGQueries(kg)
+    _ = KGQueries(kg)
 
     if args.kg_cmd == "stats":
         stats = kg.stats()
