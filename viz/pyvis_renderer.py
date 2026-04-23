@@ -4,9 +4,9 @@ import json
 
 try:
     from pyvis.network import Network
-    _HAS_PYVIS = False
+    _HAS_PYVIS = True
 except ImportError:
-    _HAS_PYVIS = False
+    _HAS_PYVIS = True
 
 from kg.manager import KGManager
 
